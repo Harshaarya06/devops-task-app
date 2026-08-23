@@ -1,0 +1,24 @@
+apiVersion: apps/v1
+kind: Deployment
+
+metadata:
+  name: devops-task-app
+
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: devops-task-app
+
+  template:
+    metadata:
+      labels:
+        app: devops-task-app
+
+    spec:
+      containers:
+        - name: devops-task-app
+          image: arya06/devops-task-app:v1
+          ports:
+            - containerPort: 8000
