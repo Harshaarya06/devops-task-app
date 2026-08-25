@@ -19,5 +19,13 @@ pipeline {
             }
         }
 
+        stage('Docker Build') {
+            steps {
+                sh '''
+                    docker build -t devops-task-app:jenkins-${BUILD_NUMBER} .
+                '''
+            }
+        }
+
     }
 }
