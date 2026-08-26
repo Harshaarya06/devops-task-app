@@ -27,5 +27,18 @@ pipeline {
             }
         }
 
+        stage('Deploy') {
+            steps {
+                sh '''
+                    docker rm -f devops-task-app || true
+
+                    docker run -d \
+                        --name devops-task-app \
+                        -p 8000:8000 \
+                        devops-task-app:jenkins-${BUILD_NUMBER}
+                '''
+            }
+        }
+
     }
 }
