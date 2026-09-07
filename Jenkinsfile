@@ -1,3 +1,4 @@
+```groovy
 pipeline {
     agent any
 
@@ -22,23 +23,42 @@ pipeline {
         stage('Docker Build') {
             steps {
                 sh '''
-                    docker build -t devops-task-app:jenkins-${BUILD_NUMBER} .
+                    docker build -t arya06/devops-task-app:jenkins-${BUILD_NUMBER} .
                 '''
             }
         }
 
-        stage('Deploy') {
+        stage('Docker Push') {
+            steps {
+                withCredentials([
+                    usernamePassword(
+                        credentialsId: 'dockerhub-credentials',
+                        usernameVariable: 'DOCKERHUB_USERNAME',
+                        passwordVariable: 'DOCKERHUB_TOKEN'
+                    )
+                ]) {
+                    sh '''
+                        echo "$DOCKERHUB_TOKEN" | docker login -u "$DOCKERHUB_USERNAME" --password-stdin
+
+                        docker push arya06/devops-task-app:jenkins-${BUILD_NUMBER}
+
+                        docker logout
+                    '''
+                }
+            }
+        }
+
+        stage('Deploy to Kubernetes') {
             steps {
                 sh '''
-                    docker rm -f devops-task-app || true
+                    kubectl set image deployment/devops-task-app \
+                        devops-task-app=arya06/devops-task-app:jenkins-${BUILD_NUMBER}
 
-                    docker run -d \
-                        --name devops-task-app \
-                        -p 8000:8000 \
-                        devops-task-app:jenkins-${BUILD_NUMBER}
+                    kubectl rollout status deployment/devops-task-app
                 '''
             }
         }
 
     }
 }
+```
